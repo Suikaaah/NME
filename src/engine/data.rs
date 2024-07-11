@@ -14,7 +14,6 @@ pub type SkillType = u16;
 
 pub const SKILL_SLOT_COUNT: usize = 16;
 
-
 #[derive(Default)]
 pub struct Data {
   pub macca : i32,

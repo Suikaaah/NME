@@ -25,9 +25,9 @@ impl Engine {
 
     let hwnd = unsafe {
       winmsg::FindWindowA(PCSTR::null(), misc::pcstr(read))
-    }.map_err(|_| "Could not find the window specified.
-                  \nEdit window_name.txt so it matches your emulator's window name.
-                  \n(case sensitive, 2 spaces between \"PCSX2\" and \"1.x.x\")")?;
+    }.map_err(|_| "Could not find the window specified.\n\
+                   Open and edit window_name.txt so it matches your emulator's window name.\n\
+                   (case sensitive, 2 spaces between \"PCSX2\" and \"1.x.x\")")?;
 
     let proc_id = unsafe {
       let mut proc_id: u32 = 0;
@@ -124,7 +124,8 @@ impl Engine {
 
     unsafe {
       windbg::ReadProcessMemory(self.proc, addr, buffer_ptr, std::mem::size_of::<T>(), None)
-    }.map_err(|e| e.to_string())?;
+    }.map_err(|_| "Could not read from memory.\n\
+                   Please make sure the game is running.")?;
 
     Ok(buffer)
   }
@@ -135,7 +136,8 @@ impl Engine {
 
     unsafe {
       windbg::WriteProcessMemory(self.proc, addr, buffer_ptr, std::mem::size_of::<T>(), None)
-    }.map_err(|e| e.to_string())?;
+    }.map_err(|_| "Could not write to memory.\n\
+                   Please make sure the game is running.")?;
 
     Ok(())
   }

@@ -17,7 +17,7 @@ fn run() -> Result<(), String> {
   let (window, _gc)   = misc::create_window(&video_subsystem)?;
   let gl              = misc::glow_context(&window);
   let engine          = engine::Engine::new()?;
-  let mut gamemode   = Gamemode::Vanilla;
+  let mut gamemode    = Gamemode::Vanilla;
   let mut data_prev   = Data::default();
   let mut lock        = Lock::default();
   let mut event_pump  = sdl_context.event_pump()?;
@@ -25,7 +25,9 @@ fn run() -> Result<(), String> {
   let mut platform    = iss::SdlPlatform::init(&mut imgui);
   let mut renderer    = igr::AutoRenderer::initialize(gl, &mut imgui)
     .map_err(|e| e.to_string())?;
-  let mut selection: usize = 0;
+  let mut selection: usize       = 0;
+  let mut table    : Vec<&Skill> = Skill::table(gamemode).iter().collect();
+  table.sort();
 
   'main_loop: loop {
     for event in event_pump.poll_iter() {
@@ -45,9 +47,7 @@ fn run() -> Result<(), String> {
     if let Some(_token) = ui.window("Stats")
       .position([0.0, 0.0], imgui::Condition::FirstUseEver)
       .size([350.0, 400.0], imgui::Condition::FirstUseEver)
-      .resizable(false)
-      .movable(false)
-      .collapsible(false)
+      .resizable(false).movable(false).collapsible(false)
       .begin() {
       macro_rules! lock_and_input {
         ($label: expr, $field: tt) => {
@@ -83,13 +83,11 @@ fn run() -> Result<(), String> {
     if let Some(_token) = ui.window("Skill Slots")
       .position([0.0, 400.0], imgui::Condition::FirstUseEver)
       .size([350.0, 275.0], imgui::Condition::FirstUseEver)
-      .resizable(false)
-      .movable(false)
-      .collapsible(false)
+      .resizable(false).movable(false).collapsible(false)
       .begin() {
       ui.columns(2, "col_skill_slots", false);
       let skill_availability = data.skill_availability();
-      if (skill_availability as usize) < selection {
+      if skill_availability < selection as u8 {
         selection = 0;
       }
 
@@ -119,26 +117,26 @@ fn run() -> Result<(), String> {
     if let Some(_token) = ui.window("Gamemode")
       .position([350.0, 0.0], imgui::Condition::FirstUseEver)
       .size([600.0, 70.0], imgui::Condition::FirstUseEver)
-      .resizable(false)
-      .movable(false)
-      .collapsible(false)
+      .resizable(false).movable(false).collapsible(false)
       .begin() {
+      let mut clicked = false;
+
       ui.columns(2, "col_gamemode", false);
-      ui.radio_button("Vanilla", &mut gamemode, Gamemode::Vanilla);
+      clicked |= ui.radio_button("Vanilla", &mut gamemode, Gamemode::Vanilla);
       ui.next_column();
-      ui.radio_button("HardType", &mut gamemode, Gamemode::HardType);
+      clicked |= ui.radio_button("HardType", &mut gamemode, Gamemode::HardType);
+
+      if clicked {
+        table = Skill::table(gamemode).iter().collect();
+        table.sort();
+      }
     }
     if let Some(_token) = ui.window("Skill Table")
       .position([350.0, 70.0], imgui::Condition::FirstUseEver)
       .size([600.0, 605.0], imgui::Condition::FirstUseEver)
-      .resizable(false)
-      .movable(false)
-      .collapsible(false)
+      .resizable(false).movable(false).collapsible(false)
       .begin() {
       ui.columns(4, "col_skill_table", false);
-
-      let mut table: Vec<&Skill> = Skill::table(gamemode).iter().collect();
-      table.sort();
 
       for (idx, &skill) in table.iter().enumerate() {
         if idx != 0 && idx % (table.len() / 4) == 0 {
@@ -156,6 +154,7 @@ fn run() -> Result<(), String> {
     }
     engine.write_locked_only(&data, &lock)?;
     data_prev = data;
+
     let draw_data = imgui.render();
     unsafe {
       renderer.gl_context().clear(glow::COLOR_BUFFER_BIT);
