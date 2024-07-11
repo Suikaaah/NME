@@ -98,6 +98,24 @@ impl Engine {
     Ok(())
   }
 
+  /// ignores skills
+  pub fn write_locked_only(&self, data: &Data, lock: &Lock) -> Result<(), String> {
+    if lock.macca  { self.write(data.macca  as MaccaType, address::macca())?;  }
+    if lock.hp     { self.write(data.hp     as HpType   , address::hp())?;     }
+    if lock.max_hp { self.write(data.max_hp as MaxHpType, address::max_hp())?; }
+    if lock.mp     { self.write(data.mp     as MpType   , address::mp())?;     }
+    if lock.max_mp { self.write(data.max_mp as MaxMpType, address::max_mp())?; }
+    if lock.exp    { self.write(data.exp    as ExpType  , address::exp())?;    }
+    if lock.level  { self.write(data.level  as LevelType, address::level())?;  }
+    if lock.st     { self.write(data.st     as StType   , address::st())?;     }
+    if lock.ma     { self.write(data.ma     as MaType   , address::ma())?;     }
+    if lock.vi     { self.write(data.vi     as ViType   , address::vi())?;     }
+    if lock.ag     { self.write(data.ag     as AgType   , address::ag())?;     }
+    if lock.lu     { self.write(data.lu     as LuType   , address::lu())?;     }
+
+    Ok(())
+  }
+
   fn read<T: Default>(&self, addr: u64) -> Result<T, String> {
     let addr = addr as *const c_void;
 

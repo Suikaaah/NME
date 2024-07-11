@@ -39,7 +39,8 @@ fn run() -> Result<(), String> {
 
     platform.prepare_frame(&mut imgui, &window, &event_pump);
 
-    let mut data = engine.bulk_read(&lock, &data_prev)?;
+    let mut data          = engine.bulk_read(&lock, &data_prev)?;
+    let mut value_changed = false;
     let ui = imgui.new_frame();
     if let Some(_token) = ui.window("Stats")
       .position([0.0, 0.0], imgui::Condition::FirstUseEver)
@@ -53,7 +54,7 @@ fn run() -> Result<(), String> {
           ui.checkbox(format!("##{}", $label), &mut lock.$field);
           ui.same_line();
           ui.set_next_item_width(200.0);
-          ui.input_int($label, &mut data.$field).build();
+          value_changed |= ui.input_int($label, &mut data.$field).build();
         };
       }
 
@@ -88,14 +89,14 @@ fn run() -> Result<(), String> {
       .begin() {
       ui.columns(2, "col_skill_slots", false);
       let skill_availability = data.skill_availability();
+      if (skill_availability as usize) < selection {
+        selection = 0;
+      }
 
       macro_rules! radio_button {
         ($idx: expr) => {
-          ui.radio_button(
-            format!("{}##{}", Skill::get(gamemode, data.skills[$idx] as usize)?.name, $idx),
-            &mut selection,
-            $idx
-          );
+          let label = format!("{}##{}", Skill::get(gamemode, data.skills[$idx] as usize)?.name, $idx);
+          ui.radio_button(label, &mut selection, $idx);
         };
       }
 
@@ -144,12 +145,16 @@ fn run() -> Result<(), String> {
           ui.next_column();
         }
         if ui.button(format!("{}##{}", skill.name, skill.id)) {
+          value_changed = true;
           data.skills[selection] = skill.id as i32;
         }
       }
     }
 
-    engine.bulk_write(&data)?;
+    if value_changed {
+      engine.bulk_write(&data)?;
+    }
+    engine.write_locked_only(&data, &lock)?;
     data_prev = data;
     let draw_data = imgui.render();
     unsafe {
