@@ -27,7 +27,7 @@ impl Engine {
       winmsg::FindWindowA(PCSTR::null(), misc::pcstr(read))
     }.map_err(|_| "Could not find the window specified.\n\
                    Open and edit window_name.txt so it matches your emulator's window name.\n\
-                   (case sensitive, 2 spaces between \"PCSX2\" and \"1.x.x\")")?;
+                   (2 spaces between \"PCSX2\" and \"1.x.x\")")?;
 
     let proc_id = unsafe {
       let mut proc_id: u32 = 0;
