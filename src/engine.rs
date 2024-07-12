@@ -42,77 +42,92 @@ impl Engine {
     Ok(Self { proc })
   }
 
-  pub fn bulk_read(&self, data: &Data) -> Result<Data, String> {
-    // read unless it's locked
-    macro_rules! m {
-      ($t: ty, $field: tt) => {
-        if lock.$field {
-          data_prev.$field
-        } else {
-          self.read::<$t>(address::$field())? as i32
+  pub fn bulk_read(&self, mut data: Data) -> Result<Data, String> {
+    macro_rules! write_if_unlocked {
+      ($field: tt) => {
+        data.$field.write_if_unlocked(|x| {
+          *x = self.read(address::$field())?;
+          Ok(())
+        })
+      };
+    }
+
+    write_if_unlocked!(macca)?;
+    write_if_unlocked!(hp)?;
+    write_if_unlocked!(max_hp)?;
+    write_if_unlocked!(mp)?;
+    write_if_unlocked!(max_mp)?;
+    write_if_unlocked!(exp)?;
+    write_if_unlocked!(level)?;
+    write_if_unlocked!(st)?;
+    write_if_unlocked!(ma)?;
+    write_if_unlocked!(vi)?;
+    write_if_unlocked!(ag)?;
+    write_if_unlocked!(lu)?;
+
+    // skills don't have locks
+    for (idx, skill) in data.skills.iter_mut().enumerate() {
+      skill.write(|x| { *x = self.read(address::skill_address(idx)?)?; Ok(()) })?;
+    }
+
+    Ok(data)
+  }
+
+  pub fn bulk_write(&self, data: &Data) -> Result<(), String> {
+    macro_rules! write {
+      ($field: tt) => {
+        if let Some(x) = data.$field.read() {
+          self.write(x, address::$field())?;
         }
       };
     }
 
-    let mut skills: [i32; data::SKILL_SLOT_COUNT] = Default::default();
-    for (idx, skill) in skills.iter_mut().enumerate() {
-      *skill = self.read::<SkillType>(address::skill_address(idx)?)? as i32;
-    }
-
-    Ok(Data {
-      macca : m!(MaccaType, macca),
-      hp    : m!(HpType   , hp),
-      max_hp: m!(MaxHpType, max_hp),
-      mp    : m!(MpType   , mp),
-      max_mp: m!(MaxMpType, max_mp),
-      exp   : m!(ExpType  , exp),
-      level : m!(LevelType, level),
-      st    : m!(StType   , st),
-      ma    : m!(MaType   , ma),
-      vi    : m!(ViType   , vi),
-      ag    : m!(AgType   , ag),
-      lu    : m!(LuType   , lu),
-      skills
-    })
-  }
-
-  pub fn bulk_write(&self, data: &Data) -> Result<(), String> {
-    self.write(data.macca  as MaccaType, address::macca())?;
-    self.write(data.hp     as HpType   , address::hp())?;
-    self.write(data.max_hp as MaxHpType, address::max_hp())?;
-    self.write(data.mp     as MpType   , address::mp())?;
-    self.write(data.max_mp as MaxMpType, address::max_mp())?;
-    self.write(data.exp    as ExpType  , address::exp())?;
-    self.write(data.level  as LevelType, address::level())?;
-    self.write(data.st     as StType   , address::st())?;
-    self.write(data.ma     as MaType   , address::ma())?;
-    self.write(data.vi     as ViType   , address::vi())?;
-    self.write(data.ag     as AgType   , address::ag())?;
-    self.write(data.lu     as LuType   , address::lu())?;
+    write!(macca);
+    write!(hp);
+    write!(max_hp);
+    write!(mp);
+    write!(max_mp);
+    write!(exp);
+    write!(level);
+    write!(st);
+    write!(ma);
+    write!(vi);
+    write!(ag);
+    write!(lu);
 
     self.write(data.skill_availability(), address::skill_availability())?;
 
-    for (idx, &skill) in data.skills.iter().enumerate() {
-      self.write(skill as SkillType, address::skill_address(idx)?)?;
+    for (idx, skill) in data.skills.iter().enumerate() {
+      if let Some(id) = skill.read() {
+        self.write(id, address::skill_address(idx)?)?;
+      }
     }
 
     Ok(())
   }
 
   /// ignores skills
-  pub fn write_locked_only(&self, data: &Data, lock: &Lock) -> Result<(), String> {
-    if lock.macca  { self.write(data.macca  as MaccaType, address::macca())?;  }
-    if lock.hp     { self.write(data.hp     as HpType   , address::hp())?;     }
-    if lock.max_hp { self.write(data.max_hp as MaxHpType, address::max_hp())?; }
-    if lock.mp     { self.write(data.mp     as MpType   , address::mp())?;     }
-    if lock.max_mp { self.write(data.max_mp as MaxMpType, address::max_mp())?; }
-    if lock.exp    { self.write(data.exp    as ExpType  , address::exp())?;    }
-    if lock.level  { self.write(data.level  as LevelType, address::level())?;  }
-    if lock.st     { self.write(data.st     as StType   , address::st())?;     }
-    if lock.ma     { self.write(data.ma     as MaType   , address::ma())?;     }
-    if lock.vi     { self.write(data.vi     as ViType   , address::vi())?;     }
-    if lock.ag     { self.write(data.ag     as AgType   , address::ag())?;     }
-    if lock.lu     { self.write(data.lu     as LuType   , address::lu())?;     }
+  pub fn write_locked_only(&self, data: &Data) -> Result<(), String> {
+    macro_rules! write_if_locked {
+      ($field: tt) => {
+        if let Some(x) = data.$field.read_if_locked() {
+          self.write(x, address::$field())?;
+        }
+      };
+    }
+
+    write_if_locked!(macca);
+    write_if_locked!(hp);
+    write_if_locked!(max_hp);
+    write_if_locked!(mp);
+    write_if_locked!(max_mp);
+    write_if_locked!(exp);
+    write_if_locked!(level);
+    write_if_locked!(st);
+    write_if_locked!(ma);
+    write_if_locked!(vi);
+    write_if_locked!(ag);
+    write_if_locked!(lu);
 
     Ok(())
   }

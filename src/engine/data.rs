@@ -1,25 +1,48 @@
-#[derive(Default, Clone)]
+#[derive(Default)]
 pub struct Variable<T> {
   pub value : i32,
   pub locked: bool,
-      _pd   : std::marker::PhantomData<T>
+      _t    : std::marker::PhantomData<T>
 }
 
-impl<T: From<i32> + Into<i32>> Variable<T> {
-  pub fn read(&self) -> T {
-    T::from(self.value)
+impl<T: TryFrom<i32> + TryInto<i32>> Variable<T> {
+  pub fn read(&self) -> Option<T> {
+    T::try_from(self.value).ok()
   }
 
-  pub fn write(&mut self, f: fn(&mut T)) {
-    let mut temp = self.read();
-    f(&mut temp);
-    self.value = temp.into();
+  pub fn read_if_locked(&self) -> Option<T> {
+    if self.locked {
+      self.read()
+    } else {
+      None
+    }
+  }
+
+  pub fn write(&mut self, f: impl Fn(&mut T) -> Result<(), String>)
+    -> Result<(), String> {
+    if let Some(mut x) = self.read() {
+      f(&mut x)?;
+      if let Some(y) = x.try_into().ok() {
+        self.value = y;
+      }
+    }
+
+    Ok(())
+  }
+
+  pub fn write_if_unlocked(&mut self, f: impl Fn(&mut T) -> Result<(), String>)
+    -> Result<(), String> {
+    if !self.locked {
+      self.write(f)?;
+    }
+
+    Ok(())
   }
 }
 
 pub const SKILL_SLOT_COUNT: usize = 16;
 
-#[derive(Default, Clone)]
+#[derive(Default)]
 pub struct Data {
   pub macca : Variable<u32>,
   pub hp    : Variable<u16>,
@@ -37,9 +60,9 @@ pub struct Data {
 }
 
 impl Data {
-  pub fn skill_availability(&self) -> usize {
+  pub fn skill_availability(&self) -> u8 {
     self.skills.iter()
       .position(|x| x.value == 0)
-      .unwrap_or(SKILL_SLOT_COUNT) as usize
+      .unwrap_or(SKILL_SLOT_COUNT) as u8
   }
 }

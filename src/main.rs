@@ -9,7 +9,7 @@ use sdl2::event::Event;
 use glow::HasContext;
 
 mod engine;
-use engine::{data::{Data, Lock, SKILL_SLOT_COUNT}, misc, skill::{Gamemode, Skill}};
+use engine::{data::{Data, SKILL_SLOT_COUNT}, misc, skill::{Gamemode, Skill}};
 
 fn run() -> Result<(), String> {
   let sdl_context     = sdl2::init()?;
@@ -18,8 +18,7 @@ fn run() -> Result<(), String> {
   let gl              = misc::glow_context(&window);
   let engine          = engine::Engine::new()?;
   let mut gamemode    = Gamemode::Vanilla;
-  let mut data_prev   = Data::default();
-  let mut lock        = Lock::default();
+  let mut data        = Data::default();
   let mut event_pump  = sdl_context.event_pump()?;
   let mut imgui       = misc::create_imgui()?;
   let mut platform    = iss::SdlPlatform::init(&mut imgui);
@@ -40,10 +39,10 @@ fn run() -> Result<(), String> {
     }
 
     platform.prepare_frame(&mut imgui, &window, &event_pump);
-
-    let mut data          = engine.bulk_read(&lock, &data_prev)?;
+    data = engine.bulk_read(data)?;
     let mut value_changed = false;
     let ui = imgui.new_frame();
+
     if let Some(_token) = ui.window("Stats")
       .position([0.0, 0.0], imgui::Condition::FirstUseEver)
       .size([350.0, 400.0], imgui::Condition::FirstUseEver)
@@ -51,10 +50,10 @@ fn run() -> Result<(), String> {
       .begin() {
       macro_rules! lock_and_input {
         ($label: expr, $field: tt) => {
-          ui.checkbox(format!("##{}", $label), &mut lock.$field);
+          ui.checkbox(format!("##{}", $label), &mut data.$field.locked);
           ui.same_line();
           ui.set_next_item_width(200.0);
-          value_changed |= ui.input_int($label, &mut data.$field).build();
+          value_changed |= ui.input_int($label, &mut data.$field.value).build();
         };
       }
 
@@ -93,13 +92,13 @@ fn run() -> Result<(), String> {
 
       macro_rules! radio_button {
         ($idx: expr) => {
-          let label = format!("{}##{}", Skill::get(gamemode, data.skills[$idx] as usize)?.name, $idx);
+          let label = format!("{}##{}", Skill::get(gamemode, data.skills[$idx].value as usize)?.name, $idx);
           ui.radio_button(label, &mut selection, $idx);
         };
       }
 
       for idx in 0..SKILL_SLOT_COUNT {
-        if idx == SKILL_SLOT_COUNT/2 {
+        if idx == SKILL_SLOT_COUNT / 2 {
           ui.separator();
         }
         if idx != 0 && idx % (SKILL_SLOT_COUNT / 4) == 0 {
@@ -142,9 +141,9 @@ fn run() -> Result<(), String> {
         if idx != 0 && idx % (table.len() / 4) == 0 {
           ui.next_column();
         }
-        if ui.button(format!("{}##{}", skill.name, skill.id)) {
+        if ui.button(format!("{}##{}", skill.name, idx)) {
           value_changed = true;
-          data.skills[selection] = skill.id as i32;
+          data.skills[selection].value = skill.id as i32;
         }
       }
     }
@@ -152,8 +151,7 @@ fn run() -> Result<(), String> {
     if value_changed {
       engine.bulk_write(&data)?;
     }
-    engine.write_locked_only(&data, &lock)?;
-    data_prev = data;
+    engine.write_locked_only(&data)?;
 
     let draw_data = imgui.render();
     unsafe {
