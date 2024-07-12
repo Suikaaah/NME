@@ -42,7 +42,8 @@ impl Engine {
     Ok(Self { proc })
   }
 
-  pub fn bulk_read(&self, lock: &Lock, data_prev: &Data) -> Result<Data, String> {
+  pub fn bulk_read(&self, data: &Data) -> Result<Data, String> {
+    // read unless it's locked
     macro_rules! m {
       ($t: ty, $field: tt) => {
         if lock.$field {
