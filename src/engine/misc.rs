@@ -3,7 +3,7 @@ use windows::core::PCSTR;
 
 pub fn create_video_subsystem(sdl_context: &sdl2::Sdl) -> Result<sdl2::VideoSubsystem, String> {
     let video_subsystem = sdl_context.video()?;
-    let gl_attr         = video_subsystem.gl_attr();
+    let gl_attr = video_subsystem.gl_attr();
     gl_attr.set_context_version(3, 3);
     gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
 
@@ -15,7 +15,7 @@ pub fn create_window(
     video_subsystem: &sdl2::VideoSubsystem,
 ) -> Result<(sdl2::video::Window, sdl2::video::GLContext), String> {
     let window = video_subsystem
-        .window("SMT Nocturne Memory Editor 1.4", 950, 675)
+        .window("SMT Nocturne Memory Editor 1.5", 950, 700)
         .allow_highdpi()
         .opengl()
         .position_centered()

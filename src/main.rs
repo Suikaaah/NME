@@ -1,5 +1,7 @@
 #![windows_subsystem = "windows"]
 
+use std::time::{Duration, SystemTime};
+
 use windows::Win32::Foundation::HWND;
 use windows::Win32::UI::WindowsAndMessaging as winmsg;
 
@@ -16,20 +18,33 @@ use engine::{
 };
 
 fn run() -> Result<(), String> {
-    let sdl_context     = sdl2::init()?;
+    let sdl_context = sdl2::init()?;
     let video_subsystem = misc::create_video_subsystem(&sdl_context)?;
-    let (window, _gc)   = misc::create_window(&video_subsystem)?;
-    let gl              = misc::glow_context(&window);
-    let engine          = engine::Engine::new()?;
-    let mut gamemode    = Gamemode::Vanilla;
-    let mut data        = Data::default();
-    let mut event_pump  = sdl_context.event_pump()?;
-    let mut imgui       = misc::create_imgui()?;
-    let mut platform    = iss::SdlPlatform::init(&mut imgui);
-    let mut renderer    = igr::AutoRenderer::initialize(gl, &mut imgui).map_err(|e| e.to_string())?;
-    let mut selection: usize = 0;
-    let mut table: Vec<&Skill> = Skill::table(gamemode).iter().collect();
-    table.sort();
+    let (window, _gc) = misc::create_window(&video_subsystem)?;
+    let gl = misc::glow_context(&window);
+    let engine = engine::Engine::new()?;
+    let mut event_pump = sdl_context.event_pump()?;
+    let mut imgui = misc::create_imgui()?;
+    let mut platform = iss::SdlPlatform::init(&mut imgui);
+    let mut renderer = igr::AutoRenderer::initialize(gl, &mut imgui).map_err(|e| e.to_string())?;
+
+    let mut gamemode = Gamemode::Vanilla;
+    let mut data = Data::default();
+    let mut selection = 0usize;
+    let mut rng = rand::thread_rng();
+    let mut last_shuffle = SystemTime::now();
+
+    let get_tables = |gamemode: Gamemode| -> (Vec<&Skill>, Vec<&Skill>) {
+        let mut table: Vec<&Skill> = Skill::table(gamemode).iter().collect();
+
+        let s_table: Vec<&Skill> = table.iter().filter(|x| x.id > 0).map(|&x| x).collect();
+
+        table.sort();
+
+        (table, s_table)
+    };
+
+    let (mut table, mut s_table) = get_tables(gamemode);
 
     'main_loop: loop {
         for event in event_pump.poll_iter() {
@@ -89,7 +104,7 @@ fn run() -> Result<(), String> {
         if let Some(_token) = ui
             .window("Skill Slots")
             .position([0.0, 400.0], imgui::Condition::FirstUseEver)
-            .size([350.0, 275.0], imgui::Condition::FirstUseEver)
+            .size([350.0, 300.0], imgui::Condition::FirstUseEver)
             .resizable(false)
             .movable(false)
             .collapsible(false)
@@ -111,6 +126,9 @@ fn run() -> Result<(), String> {
                     ui.radio_button(label, &mut selection, $idx);
                 };
             }
+
+            ui.checkbox("Random", &mut data.random);
+            ui.separator();
 
             for idx in 0..SKILL_SLOT_COUNT {
                 if idx == SKILL_SLOT_COUNT / 2 {
@@ -145,14 +163,13 @@ fn run() -> Result<(), String> {
             clicked |= ui.radio_button("HardType", &mut gamemode, Gamemode::HardType);
 
             if clicked {
-                table = Skill::table(gamemode).iter().collect();
-                table.sort();
+                (table, s_table) = get_tables(gamemode);
             }
         }
         if let Some(_token) = ui
             .window("Skill Table")
             .position([350.0, 70.0], imgui::Condition::FirstUseEver)
-            .size([600.0, 605.0], imgui::Condition::FirstUseEver)
+            .size([600.0, 630.0], imgui::Condition::FirstUseEver)
             .resizable(false)
             .movable(false)
             .collapsible(false)
@@ -167,6 +184,22 @@ fn run() -> Result<(), String> {
                 if ui.button(format!("{}##{}", skill.name, idx)) {
                     value_changed = true;
                     data.skills[selection].value = skill.id as i32;
+                }
+            }
+        }
+
+        if data.random {
+            let now = SystemTime::now();
+            let d = now
+                .duration_since(last_shuffle)
+                .map_err(|why| why.to_string())?;
+
+            if d > Duration::from_millis(33) {
+                last_shuffle = now;
+                use rand::prelude::SliceRandom;
+                s_table.shuffle(&mut rng);
+                for idx in 0..SKILL_SLOT_COUNT {
+                    data.skills[idx].value = s_table[idx].id as i32;
                 }
             }
         }

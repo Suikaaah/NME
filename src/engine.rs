@@ -134,6 +134,15 @@ impl Engine {
         write_if_locked!(ag);
         write_if_locked!(lu);
 
+        if data.random {
+            self.write(data.skill_availability(), address::skill_availability())?;
+            for (idx, skill) in data.skills.iter().enumerate() {
+                if let Some(x) = skill.read() {
+                    self.write(x, address::skill_address(idx)?)?;
+                }
+            }
+        }
+
         Ok(())
     }
 
@@ -146,9 +155,7 @@ impl Engine {
         unsafe {
             windbg::ReadProcessMemory(self.proc, addr, buffer_ptr, std::mem::size_of::<T>(), None)
         }
-        .map_err(|_| {
-            "Could not read from memory.\nPlease make sure the game is running."
-        })?;
+        .map_err(|_| "Could not read from memory.\nPlease make sure the game is running.")?;
 
         Ok(buffer)
     }
@@ -160,9 +167,7 @@ impl Engine {
         unsafe {
             windbg::WriteProcessMemory(self.proc, addr, buffer_ptr, std::mem::size_of::<T>(), None)
         }
-        .map_err(|_| {
-            "Could not write to memory.\nPlease make sure the game is running."
-        })?;
+        .map_err(|_| "Could not write to memory.\nPlease make sure the game is running.")?;
 
         Ok(())
     }

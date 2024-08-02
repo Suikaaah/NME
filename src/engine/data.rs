@@ -1,8 +1,8 @@
 #[derive(Default)]
 pub struct Variable<T> {
-    pub value : i32,
+    pub value: i32,
     pub locked: bool,
-        _t    : std::marker::PhantomData<T>,
+    _t: std::marker::PhantomData<T>,
 }
 
 impl<T: TryFrom<i32> + TryInto<i32>> Variable<T> {
@@ -45,19 +45,20 @@ pub const SKILL_SLOT_COUNT: usize = 16;
 
 #[derive(Default)]
 pub struct Data {
-    pub macca : Variable<u32>,
-    pub hp    : Variable<u16>,
+    pub macca: Variable<u32>,
+    pub hp: Variable<u16>,
     pub max_hp: Variable<u16>,
-    pub mp    : Variable<u16>,
+    pub mp: Variable<u16>,
     pub max_mp: Variable<u16>,
-    pub exp   : Variable<u32>,
-    pub level : Variable<u8>,
-    pub st    : Variable<u8>,
-    pub ma    : Variable<u8>,
-    pub vi    : Variable<u8>,
-    pub ag    : Variable<u8>,
-    pub lu    : Variable<u8>,
+    pub exp: Variable<u32>,
+    pub level: Variable<u8>,
+    pub st: Variable<u8>,
+    pub ma: Variable<u8>,
+    pub vi: Variable<u8>,
+    pub ag: Variable<u8>,
+    pub lu: Variable<u8>,
     pub skills: [Variable<u16>; SKILL_SLOT_COUNT],
+    pub random: bool,
 }
 
 impl Data {

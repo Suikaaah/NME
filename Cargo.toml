@@ -4,6 +4,7 @@ version = "0.1.4"
 edition = "2021"
 
 [dependencies]
+rand = "*"
 sdl2 = "*"
 glow = "0.13.1"
 imgui = "0.12.0"
