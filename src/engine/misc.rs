@@ -15,7 +15,7 @@ pub fn create_window(
     video_subsystem: &sdl2::VideoSubsystem,
 ) -> Result<(sdl2::video::Window, sdl2::video::GLContext), String> {
     let window = video_subsystem
-        .window("SMT Nocturne Memory Editor 1.5", 950, 700)
+        .window("SMT Nocturne Memory Editor 1.4", 950, 700)
         .allow_highdpi()
         .opengl()
         .position_centered()
