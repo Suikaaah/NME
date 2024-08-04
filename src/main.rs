@@ -198,7 +198,7 @@ fn run() -> Result<(), String> {
                 last_shuffle = now;
                 use rand::prelude::SliceRandom;
                 s_table.shuffle(&mut rng);
-                for idx in 0..SKILL_SLOT_COUNT {
+                for idx in 0..8 {
                     data.skills[idx].value = s_table[idx].id as i32;
                 }
             }

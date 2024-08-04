@@ -25,7 +25,7 @@ impl Engine {
 
         let hwnd =
             unsafe { winmsg::FindWindowA(PCSTR::null(), misc::pcstr(read)) }.map_err(|_| {
-                "Could not find the window specified.\nOpen and edit window_name.txt so it matches your emulator's window name.\n(2 spaces between \"PCSX2\" and \"1.x.x\")"
+                "Could not find the window specified.\nOpen and edit window_name.txt so it matches your emulator's window name."
             })?;
 
         let proc_id = unsafe {
