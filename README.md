@@ -4,4 +4,8 @@
 * Variable Freeze (Checkboxes in the Stats window)
 * HardType supports included
 
+## How to use
+* Start emulation normally
+* Open NME
+
 ![thumbnail](https://github.com/Suikaaah/NME/blob/main/nme.png)
