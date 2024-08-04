@@ -14,10 +14,28 @@ use data::*;
 
 pub struct Engine {
     proc: HANDLE,
+    base: u64
 }
 
 impl Engine {
     pub fn new() -> Result<Self, String> {
+        println!("Enter EE Main Memory Offset:");
+
+        let base: u64 = {
+            let mut line = String::new();
+
+            std::io::stdin()
+                .read_line(&mut line)
+                .map_err(|_| "Invalid input")?;
+
+            let line = line
+                .trim_start_matches("0x")
+                .trim();
+
+            u64::from_str_radix(line, 16)
+                .map_err(|_| "Invalid input")?
+        };
+
         let read = std::fs::read_to_string("./window_name.txt")
             .map_err(|_| "Could not find window_name.txt.")?
             .trim()
@@ -41,14 +59,14 @@ impl Engine {
         let proc = unsafe { winthr::OpenProcess(winthr::PROCESS_ALL_ACCESS, false, proc_id) }
             .map_err(|e| e.to_string())?;
 
-        Ok(Self { proc })
+        Ok(Self { proc, base })
     }
 
     pub fn bulk_read(&self, mut data: Data) -> Result<Data, String> {
         macro_rules! write_if_unlocked {
             ($field: tt) => {
                 data.$field.write_if_unlocked(|x| {
-                    *x = self.read(address::$field())?;
+                    *x = self.read(address::$field(self.base))?;
                     Ok(())
                 })
             };
@@ -70,7 +88,7 @@ impl Engine {
         // skills don't have locks
         for (idx, skill) in data.skills.iter_mut().enumerate() {
             skill.write(|x| {
-                *x = self.read(address::skill_address(idx)?)?;
+                *x = self.read(address::skill_address(self.base, idx)?)?;
                 Ok(())
             })?;
         }
@@ -82,7 +100,7 @@ impl Engine {
         macro_rules! write {
             ($field: tt) => {
                 if let Some(x) = data.$field.read() {
-                    self.write(x, address::$field())?;
+                    self.write(x, address::$field(self.base))?;
                 }
             };
         }
@@ -100,11 +118,11 @@ impl Engine {
         write!(ag);
         write!(lu);
 
-        self.write(data.skill_availability(), address::skill_availability())?;
+        self.write(data.skill_availability(), address::skill_availability(self.base))?;
 
         for (idx, skill) in data.skills.iter().enumerate() {
             if let Some(id) = skill.read() {
-                self.write(id, address::skill_address(idx)?)?;
+                self.write(id, address::skill_address(self.base, idx)?)?;
             }
         }
 
@@ -116,7 +134,7 @@ impl Engine {
         macro_rules! write_if_locked {
             ($field: tt) => {
                 if let Some(x) = data.$field.read_if_locked() {
-                    self.write(x, address::$field())?;
+                    self.write(x, address::$field(self.base))?;
                 }
             };
         }
@@ -135,10 +153,10 @@ impl Engine {
         write_if_locked!(lu);
 
         if data.random {
-            self.write(data.skill_availability(), address::skill_availability())?;
+            self.write(data.skill_availability(), address::skill_availability(self.base))?;
             for (idx, skill) in data.skills.iter().enumerate() {
                 if let Some(x) = skill.read() {
-                    self.write(x, address::skill_address(idx)?)?;
+                    self.write(x, address::skill_address(self.base, idx)?)?;
                 }
             }
         }

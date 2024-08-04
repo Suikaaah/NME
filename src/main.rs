@@ -1,5 +1,3 @@
-#![windows_subsystem = "windows"]
-
 use std::time::{Duration, SystemTime};
 
 use windows::Win32::Foundation::HWND;
