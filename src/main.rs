@@ -1,6 +1,6 @@
 use std::time::{Duration, SystemTime};
 
-use windows::Win32::Foundation::HWND;
+use windows::{core::PCSTR, Win32::Foundation::HWND};
 use windows::Win32::UI::WindowsAndMessaging as winmsg;
 
 use glow::HasContext;
@@ -16,11 +16,11 @@ use engine::{
 };
 
 fn run() -> Result<(), String> {
+    let engine = engine::Engine::new()?;
     let sdl_context = sdl2::init()?;
     let video_subsystem = misc::create_video_subsystem(&sdl_context)?;
     let (window, _gc) = misc::create_window(&video_subsystem)?;
     let gl = misc::glow_context(&window);
-    let engine = engine::Engine::new()?;
     let mut event_pump = sdl_context.event_pump()?;
     let mut imgui = misc::create_imgui()?;
     let mut platform = iss::SdlPlatform::init(&mut imgui);
@@ -221,10 +221,11 @@ fn run() -> Result<(), String> {
 fn main() {
     if let Err(why) = run() {
         unsafe {
+            let (pcstr, _string) = misc::pcstr(why);
             winmsg::MessageBoxA(
                 HWND::default(),
-                misc::pcstr(why),
-                misc::pcstr("Error".to_string()),
+                pcstr,
+                PCSTR::from_raw("Error\0".as_ptr()),
                 winmsg::MB_ICONERROR,
             );
         }

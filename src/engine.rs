@@ -42,8 +42,11 @@ impl Engine {
             .to_owned();
 
         let hwnd =
-            unsafe { winmsg::FindWindowA(PCSTR::null(), misc::pcstr(read)) }.map_err(|_| {
-                "Could not find the window specified.\nOpen and edit window_name.txt so it matches your emulator's window name."
+            unsafe {
+                let (pcstr, _string) = misc::pcstr(read);
+                winmsg::FindWindowA(PCSTR::null(), pcstr)
+            }.map_err(|_| {
+                "Could not find the window specified.\r\nOpen and edit window_name.txt so it matches your emulator's window name."
             })?;
 
         let proc_id = unsafe {
@@ -173,7 +176,7 @@ impl Engine {
         unsafe {
             windbg::ReadProcessMemory(self.proc, addr, buffer_ptr, std::mem::size_of::<T>(), None)
         }
-        .map_err(|_| "Could not read from memory.\nPlease make sure the game is running.")?;
+        .map_err(|_| "Could not read from memory.\r\nPlease make sure the game is running.")?;
 
         Ok(buffer)
     }
@@ -185,7 +188,7 @@ impl Engine {
         unsafe {
             windbg::WriteProcessMemory(self.proc, addr, buffer_ptr, std::mem::size_of::<T>(), None)
         }
-        .map_err(|_| "Could not write to memory.\nPlease make sure the game is running.")?;
+        .map_err(|_| "Could not write to memory.\r\nPlease make sure the game is running.")?;
 
         Ok(())
     }

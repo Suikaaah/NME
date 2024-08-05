@@ -54,7 +54,7 @@ pub fn glow_context(window: &sdl2::video::Window) -> glow::Context {
     }
 }
 
-pub fn pcstr(s: String) -> PCSTR {
+pub fn pcstr(s: String) -> (PCSTR, String) {
     let nt = s + "\0";
-    PCSTR::from_raw(nt.as_ptr())
+    (PCSTR::from_raw(nt.as_ptr()), nt)
 }
