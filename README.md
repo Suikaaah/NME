@@ -1,19 +1,20 @@
 # NME: Nocturne Memory Editor
 ## Features
-* Full access to Demi-Fiend's stats and skills
-* Variable Freeze (Checkboxes in the Stats window)
-* HardType supports included
+* Full access to stats and skills of party
+* Variable Freeze (Checkboxes in the window)
+* Skill Randomizer
+* HardType skill table included
 
-## How to use
-### First time only (Skip if you're using PCSX2 1.6 or below)
+## How to use (PCSX2 1.7+)
+### First use only
 * Start emulation normally
 * Press Esc and navigate through Settings -> Advanced Settings
 * Enable System Console and Verbose Logging
 * Close the entire emulator and reopen it
-### Every time
-* Copy "EE Main Memory" value (PCSX2 >2.0: value on the left side of the arrow, <2.0: it should be somewhere in the log window)
+### Every use
 * Start emulation
-* Open NME
-* Enter the value you copied earlier
+* Copy and paste "EE Main Memory" from your emulator's console (you'll probably have to scroll all the way up)
+### PCSX2 1.6- (who uses?)
+* Just type 20000000 and it works
 
 ![thumbnail](https://github.com/Suikaaah/NME/blob/main/nme.png)
