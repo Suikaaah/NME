@@ -1,6 +1,8 @@
 use crate::app::App;
-use iced::widget::{checkbox, row, text_input};
-use iced::Element;
+use iced::{
+    widget::{checkbox, row, text_input},
+    Element,
+};
 
 #[derive(Debug, Default)]
 pub struct LockAndTextInput {

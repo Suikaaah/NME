@@ -1,5 +1,4 @@
-use crate::app::state::demon_slot::DemonSlot;
-use crate::app::state::skill_slot::SkillSlot;
+use crate::app::state::{demon_slot::DemonSlot, skill_slot::SkillSlot};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Parameter {

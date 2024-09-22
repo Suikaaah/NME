@@ -1,7 +1,8 @@
-use crate::app::input::lock_and_text_input::LockAndTextInput;
-use crate::app::App;
-use iced::widget::{pick_list, row, text};
-use iced::Element;
+use crate::app::{input::lock_and_text_input::LockAndTextInput, App};
+use iced::{
+    widget::{pick_list, row, text},
+    Element,
+};
 use std::fmt::Display;
 
 #[derive(Debug)]

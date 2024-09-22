@@ -15,8 +15,7 @@ use demon_slot::DemonSlot;
 use parameter::Parameter;
 use rand::{rngs::ThreadRng, thread_rng};
 use stats::Stats;
-use variable::Update;
-use variable::Variable;
+use variable::{Update, Variable};
 use windows::Win32::Foundation::HANDLE;
 
 #[derive(Debug)]
@@ -63,7 +62,7 @@ impl State {
             DemonSlot::Party(index) => self
                 .party
                 .get(index)
-                .ok_or_else(|| anyhow!("party index out of bound"))
+                .ok_or_else(|| anyhow!("party index out of bounds"))
                 .fancy_unwrap(),
         }
     }
@@ -74,7 +73,7 @@ impl State {
             DemonSlot::Party(index) => self
                 .party
                 .get_mut(index)
-                .ok_or_else(|| anyhow!("party index out of bound"))
+                .ok_or_else(|| anyhow!("party index out of bounds"))
                 .fancy_unwrap(),
         }
     }

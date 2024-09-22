@@ -1,9 +1,8 @@
-use anyhow::anyhow;
-
 use crate::app::{
     gamemode::{Gamemode, GAMEMODE},
     misc::FancyUnwrap,
 };
+use anyhow::anyhow;
 use std::{borrow::Borrow, fmt::Display};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -39,7 +38,7 @@ impl From<u16> for Skill {
     fn from(value: u16) -> Self {
         *SKILL_LIST
             .get(value as usize)
-            .ok_or_else(|| anyhow!("skill id out of bound"))
+            .ok_or_else(|| anyhow!("skill id out of bounds"))
             .fancy_unwrap()
     }
 }

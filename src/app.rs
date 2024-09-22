@@ -7,24 +7,18 @@ pub mod state;
 
 use anyhow::anyhow;
 use gamemode::GAMEMODE;
-use iced::executor;
-use iced::window;
-use iced::Size;
-use iced::Theme;
-use iced::{Application, Command, Element, Subscription};
+use iced::{executor, window, Application, Command, Element, Size, Subscription, Theme};
 use input::lock_and_text_input::LockAndTextInputMessage;
-use message::Message;
-use message::MessageField;
+use message::{Message, MessageField};
 use misc::FancyUnwrap;
-use scene::setup::Setup;
-use scene::Scene;
+use scene::{setup::Setup, Scene};
 use state::State;
-use std::borrow::Borrow;
-use std::borrow::BorrowMut;
-use std::fs::File;
-use std::io::Read;
-use std::io::Write;
-use std::time::Duration;
+use std::{
+    borrow::{Borrow, BorrowMut},
+    fs::File,
+    io::{Read, Write},
+    time::Duration,
+};
 
 #[derive(Debug)]
 pub struct App {
@@ -190,7 +184,7 @@ impl Application for App {
                     let dst = demon
                         .skills
                         .get_mut(position)
-                        .ok_or_else(|| anyhow!("skill position out of bound"))
+                        .ok_or_else(|| anyhow!("skill position out of bounds"))
                         .fancy_unwrap();
                     dst.set_target(skill.id);
                     dst.write(process).fancy_unwrap();

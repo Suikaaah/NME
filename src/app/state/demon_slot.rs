@@ -29,7 +29,7 @@ impl DemonSlot {
             DemiFiend => 0x2124_8F58,
             Party(index) if index < State::PARTY_SIZE => PARTY_0 + STEP * index as u64,
             _ => {
-                misc::panic_window("party index out of bound");
+                misc::panic_window("party index out of bounds");
             }
         }
     }

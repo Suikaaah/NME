@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 use crate::app::{
     gamemode::{Gamemode, GAMEMODE},
     input::{drop_down_list::DropDownList, lock_and_text_input::LockAndTextInput},
@@ -15,6 +13,7 @@ use crate::app::{
 };
 use anyhow::anyhow;
 use rand::{rngs::ThreadRng, seq::SliceRandom};
+use std::borrow::Borrow;
 use windows::Win32::Foundation::HANDLE;
 
 #[derive(Debug)]
@@ -146,7 +145,7 @@ impl Stats {
                     let dst = self
                         .skills
                         .get_mut(index)
-                        .ok_or_else(|| anyhow!("skill index out of bound"))
+                        .ok_or_else(|| anyhow!("skill index out of bounds"))
                         .fancy_unwrap();
                     dst.set_target(skill.id);
                     dst.write(process).fancy_unwrap();

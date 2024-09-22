@@ -1,5 +1,7 @@
-use crate::app::gamemode::Gamemode;
-use crate::app::state::{demon::Demon, demon_slot::DemonSlot, skill::Skill};
+use crate::app::{
+    gamemode::Gamemode,
+    state::{demon::Demon, demon_slot::DemonSlot, skill::Skill},
+};
 
 #[derive(Debug, Clone)]
 pub enum MessageField {

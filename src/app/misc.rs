@@ -1,11 +1,15 @@
 use anyhow::{anyhow, bail, Result};
-use std::ffi::{c_void, CString};
-use std::fmt::Debug;
-use windows::Win32::Foundation::HWND;
+use std::{
+    ffi::{c_void, CString},
+    fmt::Debug,
+};
 use windows::Win32::System::Diagnostics::Debug as windbg;
 use windows::Win32::System::Threading as winthr;
 use windows::Win32::UI::WindowsAndMessaging as winmsg;
-use windows::{core::PCSTR, Win32::Foundation::HANDLE};
+use windows::{
+    core::PCSTR,
+    Win32::Foundation::{HANDLE, HWND},
+};
 
 pub fn pcstr(string: impl AsRef<str>) -> Result<(PCSTR, CString)> {
     let c_string = CString::new(string.as_ref())?;

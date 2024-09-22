@@ -13,7 +13,7 @@ impl SkillSlot {
         if index < Stats::SKILL_SLOT_SIZE {
             SLOT_0 + STEP * index as u64
         } else {
-            misc::panic_window("skill position index out of bound");
+            misc::panic_window("skill position out of bounds");
         }
     }
 }

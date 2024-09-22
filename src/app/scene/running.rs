@@ -2,12 +2,15 @@ use crate::app::input::{
     drop_down_list::DropDownListMessage, lock_and_text_input::LockAndTextInput,
     lock_and_text_input::LockAndTextInputMessage,
 };
-use crate::app::message::{Message, MessageField};
-use crate::app::state::demon_slot::DemonSlot;
-use crate::app::state::State;
-use crate::app::App;
-use iced::widget::{checkbox, column, pick_list, row, space::Space, text};
-use iced::Element;
+use crate::app::{
+    message::{Message, MessageField},
+    state::{demon_slot::DemonSlot, State},
+    App,
+};
+use iced::{
+    widget::{checkbox, column, pick_list, row, space::Space, text},
+    Element,
+};
 
 impl<'a> From<&'a State> for Element<'a, Message> {
     fn from(value: &'a State) -> Self {

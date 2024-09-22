@@ -1,9 +1,14 @@
-use crate::app::gamemode::{Gamemode, GAMEMODE};
-use crate::app::misc::FancyUnwrap;
-use crate::app::{message::Message, App};
-use iced::alignment::Horizontal;
-use iced::widget::{button, column, pick_list, row, text, text_input, Space};
-use iced::{Alignment, Element, Length};
+use crate::app::{
+    gamemode::{Gamemode, GAMEMODE},
+    message::Message,
+    misc::FancyUnwrap,
+    App,
+};
+use iced::{
+    alignment::Horizontal,
+    widget::{button, column, pick_list, row, text, text_input, Space},
+    Alignment, Element, Length,
+};
 use std::borrow::Borrow;
 
 #[derive(Debug, Default)]
